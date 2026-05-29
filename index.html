@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RepForge — Zero Authority DAO</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070b14;--bg2:#0d1526;--bg3:#111d35;
+  --panel:rgba(13,21,38,0.92);
+  --border:rgba(0,200,255,0.13);--border-hi:rgba(0,200,255,0.42);
+  --cyan:#00c8ff;--cyan2:#00e5ff;
+  --orange:#ff6a00;--orange2:#ff9500;
+  --green:#00ff9d;--red:#ff3d5a;
+  --gold:#ffd700;--purple:#7b61ff;
+  --text:#c8dff5;--text-dim:#5a7a99;--text-bright:#e8f4ff;
+  --fd:\'Orbitron\',monospace;--fm:\'Share Tech Mono\',monospace;--fb:\'Rajdhani\',sans-serif;
+  --gc:0 0 20px rgba(0,200,255,0.4),0 0 60px rgba(0,200,255,0.15);
+  --go:0 0 20px rgba(255,106,0,0.4),0 0 60px rgba(255,106,0,0.15);
+}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);font-size:16px;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px}
+
+/* BG */
+#bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,200,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.03) 1px,transparent 1px);
+  background-size:48px 48px}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px)}
+.orb1{width:700px;height:700px;top:-250px;right:-250px;background:radial-gradient(circle,rgba(0,200,255,0.07),transparent 70%)}
+.orb2{width:600px;height:600px;bottom:-200px;left:-200px;background:radial-gradient(circle,rgba(255,106,0,0.055),transparent 70%)}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:62px;
+  background:rgba(7,11,20,0.96);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);position:sticky;top:0;z-index:100}
+.logo{font-family:var(--fd);font-size:18px;font-weight:900;color:var(--cyan);letter-spacing:3px;
+  text-shadow:var(--gc);cursor:pointer;user-select:none}
+.logo em{color:var(--orange);font-style:normal}
+.nav-r{display:flex;gap:8px;align-items:center}
+.nbtn{font-family:var(--fb);font-weight:600;font-size:13px;padding:7px 17px;border-radius:4px;
+  cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);
+  transition:all .2s;letter-spacing:.8px}
+.nbtn:hover{border-color:var(--cyan);color:var(--cyan)}
+.nbtn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,200,255,0.08)}
+.nbtn.pri{background:linear-gradient(135deg,var(--orange),var(--orange2));border-color:transparent;color:#fff;box-shadow:var(--go)}
+.nbtn.pri:hover{opacity:.85}
+.wbadge{display:flex;align-items:center;gap:7px;font-family:var(--fm);font-size:12px;color:var(--cyan);
+  padding:6px 12px;border:1px solid var(--border);border-radius:4px;background:rgba(0,200,255,0.04)}
+.wdot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+
+/* PAGES */
+.page{display:none;position:relative;z-index:1;padding:28px 32px;max-width:1280px;margin:0 auto;width:100%}
+.page.active{display:block;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* AUTH */
+.auth-wrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 62px);padding:32px;position:relative;z-index:1}
+.auth-card{width:100%;max-width:450px;background:var(--panel);border:1px solid var(--border);
+  border-radius:14px;padding:46px 40px;backdrop-filter:blur(24px);
+  box-shadow:0 0 80px rgba(0,200,255,0.07),0 32px 64px rgba(0,0,0,0.45);animation:fadeUp .4s ease}
+.auth-card.wide{max-width:510px}
+.auth-logo{text-align:center;margin-bottom:6px;font-family:var(--fd);font-size:22px;font-weight:900;color:var(--cyan);letter-spacing:3px;text-shadow:var(--gc)}
+.auth-logo em{color:var(--orange);font-style:normal}
+.auth-tag{text-align:center;font-size:12px;color:var(--text-dim);letter-spacing:1.5px;margin-bottom:32px;text-transform:uppercase}
+.auth-h{font-family:var(--fd);font-size:13px;color:var(--text-bright);letter-spacing:2px;text-align:center;margin-bottom:26px}
+.fg{margin-bottom:16px}
+.fl{display:block;font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--text-dim);margin-bottom:7px;text-transform:uppercase}
+.fi{width:100%;padding:11px 15px;background:rgba(0,200,255,0.04);border:1px solid var(--border);
+  border-radius:6px;color:var(--text-bright);font-family:var(--fb);font-size:15px;outline:none;transition:all .2s}
+.fi:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,200,255,0.1)}
+.fi::placeholder{color:var(--text-dim)}
+select.fi{appearance:none;cursor:pointer}
+.sbtn{width:100%;padding:13px;margin-top:6px;background:linear-gradient(135deg,var(--cyan),var(--purple));
+  border:none;border-radius:6px;cursor:pointer;font-family:var(--fd);font-size:12px;font-weight:700;
+  letter-spacing:2px;color:#fff;transition:all .2s;box-shadow:var(--gc)}
+.sbtn:hover:not(:disabled){opacity:.85;transform:translateY(-1px)}
+.sbtn:disabled{opacity:.45;cursor:not-allowed}
+.wbtn{width:100%;padding:11px;margin-bottom:4px;background:rgba(0,200,255,0.05);
+  border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--cyan);
+  font-family:var(--fb);font-weight:600;font-size:14px;letter-spacing:.8px;
+  display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.wbtn:hover{border-color:var(--cyan);background:rgba(0,200,255,0.1)}
+.divider{text-align:center;margin:18px 0;font-size:12px;color:var(--text-dim)}
+.sw{text-align:center;font-size:14px;color:var(--text-dim);margin-top:18px}
+.sw button{background:none;border:none;color:var(--cyan);cursor:pointer;font-size:14px;font-family:var(--fb);font-weight:600}
+.sw button:hover{text-decoration:underline}
+.err{color:var(--red);font-size:13px;margin-top:8px;padding:8px 12px;background:rgba(255,61,90,0.08);border:1px solid rgba(255,61,90,0.2);border-radius:4px}
+.ok{color:var(--green);font-size:13px;margin-top:8px;padding:8px 12px;background:rgba(0,255,157,0.07);border:1px solid rgba(0,255,157,0.2);border-radius:4px}
+.skills-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
+.sk{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;
+  border:1px solid var(--border);background:transparent;color:var(--text-dim);transition:all .2s;font-family:var(--fb)}
+.sk.on{border-color:var(--cyan);background:rgba(0,200,255,0.12);color:var(--cyan)}
+
+/* VERIFY BANNER */
+.verify-banner{background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);
+  border-radius:8px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;
+  font-size:14px;color:var(--gold)}
+.verify-banner button{margin-left:auto;padding:6px 14px;border-radius:4px;border:1px solid var(--gold);
+  background:transparent;color:var(--gold);cursor:pointer;font-size:12px;font-weight:600;font-family:var(--fb);transition:all .2s}
+.verify-banner button:hover{background:rgba(255,215,0,0.12)}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px}
+.sc{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px 22px;
+  backdrop-filter:blur(10px);transition:border-color .2s}
+.sc:hover{border-color:var(--border-hi)}
+.sl{font-size:11px;font-weight:600;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:9px}
+.sv{font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text-bright);line-height:1}
+.sv.c{color:var(--cyan);text-shadow:var(--gc)}.sv.o{color:var(--orange);text-shadow:var(--go)}
+.sv.g{color:var(--green)}.sv.p{color:var(--purple)}
+.ss{font-size:12px;color:var(--text-dim);margin-top:5px}
+
+/* DASH HEADER */
+.dh{margin-bottom:28px}
+.dg{font-family:var(--fm);font-size:12px;color:var(--text-dim);letter-spacing:1px;margin-bottom:5px}
+.dt{font-family:var(--fd);font-size:26px;font-weight:900;color:var(--text-bright);letter-spacing:2px}
+.dt span{color:var(--cyan);text-shadow:var(--gc)}
+
+/* PANEL */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:22px;backdrop-filter:blur(10px);margin-bottom:18px}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.sec-t{display:flex;align-items:center;gap:10px}
+.tbar{width:3px;height:17px;background:var(--cyan);border-radius:2px;box-shadow:var(--gc)}
+.stitle{font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:2px;color:var(--text-bright)}
+
+/* FILTERS */
+.frow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.fbtn{padding:7px 15px;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;
+  border:1px solid var(--border);background:transparent;color:var(--text-dim);transition:all .2s;letter-spacing:.5px;font-family:var(--fb)}
+.fbtn:hover{border-color:var(--cyan);color:var(--text)}
+.fbtn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,200,255,0.08)}
+.si{flex:1;min-width:200px;padding:8px 15px;background:rgba(0,200,255,0.04);
+  border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--fb);font-size:14px;outline:none;transition:all .2s}
+.si:focus{border-color:var(--cyan)}
+.si::placeholder{color:var(--text-dim)}
+
+/* BOUNTY CARDS */
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.bc{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;
+  backdrop-filter:blur(10px);transition:all .25s;cursor:pointer;position:relative;overflow:hidden}
+.bc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));opacity:0;transition:opacity .2s}
+.bc:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.32)}
+.bc:hover::before{opacity:1}
+.bch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px;gap:7px}
+.badge{font-size:10px;font-weight:700;letter-spacing:1.5px;padding:3px 8px;border-radius:3px;text-transform:uppercase;flex-shrink:0}
+.bb{background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.3)}
+.bg2{background:rgba(255,106,0,0.1);color:var(--orange);border:1px solid rgba(255,106,0,0.3)}
+.bq{background:rgba(123,97,255,0.1);color:var(--purple);border:1px solid rgba(123,97,255,0.3)}
+.bst{font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:3px}
+.so{background:rgba(0,255,157,0.1);color:var(--green);border:1px solid rgba(0,255,157,0.3)}
+.sr{background:rgba(255,215,0,0.1);color:var(--gold);border:1px solid rgba(255,215,0,0.3)}
+.sc2{background:rgba(90,122,153,0.1);color:var(--text-dim);border:1px solid rgba(90,122,153,0.3)}
+.btitle{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--text-bright);letter-spacing:.4px;margin-bottom:7px;line-height:1.45}
+.bdesc{font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.btags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:13px}
+.btag{font-size:11px;padding:3px 7px;border-radius:3px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text-dim)}
+.bfoot{display:flex;align-items:center;justify-content:space-between}
+.brw{font-family:var(--fd);font-size:16px;font-weight:900;color:var(--orange)}
+.brw span{font-size:11px;color:var(--text-dim);font-family:var(--fb);font-weight:400}
+.apbtn{padding:7px 18px;border-radius:4px;font-size:12px;font-weight:700;letter-spacing:1px;
+  cursor:pointer;border:1px solid var(--cyan);background:rgba(0,200,255,0.08);color:var(--cyan);transition:all .2s;font-family:var(--fb)}
+.apbtn:hover{background:rgba(0,200,255,0.2);box-shadow:var(--gc)}
+.applied-lbl{font-size:12px;color:var(--green);font-weight:700;padding:7px 14px}
+
+/* LOADING */
+.lw{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px;gap:14px}
+.spin{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
+.lt{font-family:var(--fm);font-size:12px;color:var(--text-dim);letter-spacing:1px}
+.empty{text-align:center;padding:60px}
+.ei{font-size:46px;margin-bottom:14px;opacity:.38}
+.et{font-family:var(--fd);font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:7px}
+.es{font-size:13px;color:var(--text-dim)}
+
+/* MODAL */
+.mdrop{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.72);backdrop-filter:blur(5px);
+  display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .2s ease}
+.modal{background:var(--bg2);border:1px solid var(--border-hi);border-radius:13px;padding:30px;
+  max-width:540px;width:100%;box-shadow:0 0 80px rgba(0,200,255,0.1);animation:fadeUp .3s ease;max-height:90vh;overflow-y:auto}
+.mc{float:right;background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;line-height:1}
+.mc:hover{color:var(--text)}
+.mt{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--cyan);letter-spacing:2px;margin-bottom:14px;clear:both}
+
+/* REP */
+.rep-hero{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:30px;
+  margin-bottom:22px;text-align:center;
+  background-image:radial-gradient(ellipse at center top,rgba(0,200,255,0.07),transparent 65%)}
+.rep-ring{width:136px;height:136px;border-radius:50%;margin:0 auto 18px;border:3px solid var(--cyan);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 0 40px rgba(0,200,255,0.22),inset 0 0 40px rgba(0,200,255,0.04)}
+.rscore{font-family:var(--fd);font-size:36px;font-weight:900;color:var(--cyan);text-shadow:var(--gc);line-height:1}
+.rlbl{font-size:11px;color:var(--text-dim);letter-spacing:1px;margin-top:3px}
+.rlevel{font-family:var(--fd);font-size:18px;font-weight:700;color:var(--text-bright);letter-spacing:2px;margin-bottom:6px}
+.rlevel span{color:var(--orange)}
+.pb-wrap{margin-bottom:9px}
+.pb-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.pb-row span:first-child{color:var(--text);font-weight:600}
+.pb-row span:last-child{color:var(--text-dim)}
+.pb-track{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.pb-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width 1.2s ease}
+.rep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px;margin-bottom:20px}
+.rsc{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:15px;text-align:center}
+.rsv{font-family:var(--fd);font-size:22px;font-weight:700;margin-bottom:3px}
+.rsn{font-size:11px;color:var(--text-dim);letter-spacing:1px}
+
+/* PORTFOLIO */
+.port-hd{display:flex;align-items:center;gap:18px;margin-bottom:28px;flex-wrap:wrap}
+.ava{width:76px;height:76px;border-radius:50%;border:2px solid var(--cyan);flex-shrink:0;
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));display:flex;align-items:center;justify-content:center;
+  font-family:var(--fd);font-size:26px;color:var(--cyan);font-weight:900;box-shadow:var(--gc)}
+.pi-name{font-family:var(--fd);font-size:20px;font-weight:900;color:var(--text-bright);letter-spacing:1px}
+.pi-handle{font-family:var(--fm);font-size:13px;color:var(--cyan);margin-top:3px}
+.pi-wallet{font-family:var(--fm);font-size:11px;color:var(--text-dim);margin-top:3px}
+.shr{padding:10px 18px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:1px;
+  cursor:pointer;border:1px solid var(--orange);background:rgba(255,106,0,0.07);color:var(--orange);transition:all .2s;font-family:var(--fb)}
+.shr:hover{background:rgba(255,106,0,0.16);box-shadow:var(--go)}
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.ach{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:15px;text-align:center;transition:all .2s}
+.ach:hover{border-color:var(--border-hi)}
+.ach-i{font-size:30px;margin-bottom:7px}
+.ach-n{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
+.ach-d{font-size:11px;color:var(--text-dim)}
+.act-item{display:flex;gap:13px;padding:13px 0;border-bottom:1px solid var(--border)}
+.act-item:last-child{border-bottom:none}
+.adot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.dc{background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+.do{background:var(--orange);box-shadow:0 0 6px var(--orange)}
+.dg2{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dp{background:var(--purple);box-shadow:0 0 6px var(--purple)}
+.at{font-size:14px;color:var(--text);line-height:1.5}
+.at strong{color:var(--text-bright)}
+.atm{font-family:var(--fm);font-size:11px;color:var(--text-dim);margin-top:2px}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:300;padding:12px 20px;border-radius:6px;
+  font-size:14px;font-weight:600;animation:slideIn .3s ease;box-shadow:0 4px 24px rgba(0,0,0,0.4)}
+.ts{background:rgba(0,255,157,0.14);border:1px solid var(--green);color:var(--green)}
+.te{background:rgba(255,61,90,0.14);border:1px solid var(--red);color:var(--red)}
+.ti{background:rgba(0,200,255,0.14);border:1px solid var(--cyan);color:var(--cyan)}
+
+/* TABS */
+.tabs{display:flex;gap:0;margin-bottom:22px;border-bottom:1px solid var(--border)}
+.tab{padding:10px 18px;font-size:13px;font-weight:600;letter-spacing:.8px;cursor:pointer;
+  border:none;background:none;color:var(--text-dim);position:relative;transition:color .2s;font-family:var(--fb)}
+.tab::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;
+  background:var(--cyan);transform:scaleX(0);transition:transform .2s}
+.tab.on{color:var(--cyan)}.tab.on::after{transform:scaleX(1)}
+.tab:hover{color:var(--text)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav{padding:0 14px}.nav-r .stitle-lbl{display:none}
+  .page{padding:14px}.bgrid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .auth-card{padding:28px 20px}.rep-grid{grid-template-columns:repeat(2,1fr)}
+  .port-hd{flex-direction:column;text-align:center}.ava{margin:0 auto}
+}
+</style>
+</head>
+<body>
+<div id="bg-grid"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="navLogo()">REP<em>FORGE</em></div>
+  <div class="nav-r" id="nav-r">
+    <span style="font-family:var(--fm);font-size:11px;color:var(--text-dim);padding:5px 10px;border:1px solid var(--border);border-radius:3px;letter-spacing:1px">ZERO AUTHORITY DAO</span>
+    <button class="nbtn" onclick="showAuth('login')">Sign In</button>
+    <button class="nbtn pri" onclick="showAuth('signup')">Join Now</button>
+  </div>
+</nav>
+
+<!-- ═══════════ LOGIN PAGE ═══════════ -->
+<div id="page-login" class="page active">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">REP<em>FORGE</em></div>
+      <div class="auth-tag">Reputation · Discovery · DAO</div>
+      <div class="auth-h">SIGN IN</div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="li-email" type="email" placeholder="contributor@dao.xyz"/></div>
+      <div class="fg"><label class="fl">Password</label><input class="fi" id="li-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div id="li-err"></div>
+      <button class="sbtn" id="li-btn" onclick="doLogin()">ACCESS DASHBOARD</button>
+      <div class="divider">── or ──</div>
+      <button class="wbtn" onclick="walletLogin()">🔗 Connect Stacks Wallet</button>
+      <div class="sw">No account? <button onclick="showAuth('signup')">Create one →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SIGNUP PAGE ═══════════ -->
+<div id="page-signup" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card wide">
+      <div class="auth-logo">REP<em>FORGE</em></div>
+      <div class="auth-tag">Join the Ecosystem</div>
+      <div class="auth-h">CREATE ACCOUNT</div>
+      <div class="fg"><label class="fl">Display Name</label><input class="fi" id="su-name" placeholder="CryptoBuilder_X"/></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="su-email" type="email" placeholder="you@dao.xyz"/></div>
+      <div class="fg"><label class="fl">Password</label><input class="fi" id="su-pass" type="password" placeholder="Min 6 characters"/></div>
+      <div class="fg"><label class="fl">Confirm Password</label><input class="fi" id="su-pass2" type="password" placeholder="Repeat password"/></div>
+      <div class="fg">
+        <label class="fl">Your Skills</label>
+        <div class="skills-wrap" id="skills-wrap"></div>
+      </div>
+      <div id="su-err"></div>
+      <button class="sbtn" id="su-btn" onclick="doSignup()">JOIN REPFORGE</button>
+      <div class="sw">Already have an account? <button onclick="showAuth('login')">Sign in →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ VERIFY EMAIL PAGE ═══════════ -->
+<div id="page-verify" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card" style="text-align:center">
+      <div class="auth-logo">REP<em>FORGE</em></div>
+      <div style="font-size:52px;margin:28px 0 16px">📬</div>
+      <div class="auth-h">CHECK YOUR EMAIL</div>
+      <p style="font-size:14px;color:var(--text-dim);line-height:1.8;margin-bottom:24px">
+        We sent a verification link to <strong id="vfy-email" style="color:var(--cyan)"></strong>.<br>
+        Click the link to activate your account.
+      </p>
+      <div style="background:rgba(0,200,255,0.05);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:22px">
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;letter-spacing:1px">EMAIL PREVIEW</div>
+        <div id="email-preview" style="font-size:13px;color:var(--text);line-height:1.7;text-align:left"></div>
+      </div>
+      <button class="sbtn" onclick="resendVerification()" id="resend-btn">RESEND EMAIL</button>
+      <div style="margin-top:16px;font-size:13px;color:var(--text-dim)">
+        Simulating backend? <button onclick="simulateVerify()" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-size:13px;font-family:var(--fb);font-weight:600">Click to verify instantly →</button>
+      </div>
+      <div class="sw" style="margin-top:16px">Wrong email? <button onclick="showAuth('signup')">Sign up again →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DASHBOARD HOME ═══════════ -->
+<div id="page-home" class="page">
+  <div class="dh">
+    <div class="dg">// WELCOME BACK, <span id="hm-user"></span></div>
+    <div class="dt">Mission <span>Control</span></div>
+  </div>
+  <div id="hm-verify-banner"></div>
+  <div class="stats-grid">
+    <div class="sc"><div class="sl">REP Score</div><div class="sv c" id="hm-rep">0</div><div class="ss">Keep building reputation</div></div>
+    <div class="sc"><div class="sl">Open Bounties</div><div class="sv o" id="hm-open">—</div><div class="ss">opportunities available</div></div>
+    <div class="sc"><div class="sl">Applied</div><div class="sv g" id="hm-applied">0</div><div class="ss">total applications</div></div>
+    <div class="sc"><div class="sl">Rewards Pool</div><div class="sv p" id="hm-pool">—</div><div class="ss">STX available</div></div>
+  </div>
+  <div class="panel">
+    <div class="sec-hd"><div class="sec-t"><div class="tbar"></div><div class="stitle">SKILL-MATCHED FOR YOU</div></div><span id="hm-skills-lbl" style="font-size:12px;color:var(--text-dim)"></span></div>
+    <div id="hm-matched"></div>
+  </div>
+  <div class="panel">
+    <div class="sec-hd"><div class="sec-t"><div class="tbar"></div><div class="stitle">LATEST OPPORTUNITIES</div></div></div>
+    <div id="hm-latest"></div>
+  </div>
+</div>
+
+<!-- ═══════════ BOUNTIES PAGE ═══════════ -->
+<div id="page-bounties" class="page">
+  <div class="dh">
+    <div class="dg">// OPPORTUNITY EXPLORER</div>
+    <div class="dt">Bounties, Gigs &amp; <span>Quests</span></div>
+  </div>
+  <div class="stats-grid">
+    <div class="sc"><div class="sl">Total Opportunities</div><div class="sv c" id="b-total">—</div><div class="ss" id="b-open-sub">loading…</div></div>
+    <div class="sc"><div class="sl">Rewards Pool</div><div class="sv o" id="b-pool">—</div><div class="ss">STX available</div></div>
+    <div class="sc"><div class="sl">Applied By You</div><div class="sv g" id="b-mine">0</div><div class="ss">opportunities submitted</div></div>
+    <div class="sc"><div class="sl">Matched Results</div><div class="sv p" id="b-matched">—</div><div class="ss">skill-matched</div></div>
+  </div>
+  <div class="frow">
+    <input class="si" id="b-search" placeholder="Search by title or tag…" oninput="renderBounties()"/>
+    <button class="fbtn on" data-sf="all" onclick="setFilter('status','all',this)">All Status</button>
+    <button class="fbtn" data-sf="open" onclick="setFilter('status','open',this)">Open</button>
+    <button class="fbtn" data-sf="review" onclick="setFilter('status','review',this)">In Review</button>
+    <button class="fbtn" data-sf="closed" onclick="setFilter('status','closed',this)">Closed</button>
+  </div>
+  <div class="frow">
+    <button class="fbtn on" data-tf="all" onclick="setFilter('type','all',this)">All Types</button>
+    <button class="fbtn" data-tf="bounty" onclick="setFilter('type','bounty',this)">Bounties</button>
+    <button class="fbtn" data-tf="gig" onclick="setFilter('type','gig',this)">Gigs</button>
+    <button class="fbtn" data-tf="quest" onclick="setFilter('type','quest',this)">Quests</button>
+  </div>
+  <div id="b-grid"></div>
+</div>
+
+<!-- ═══════════ REPUTATION PAGE ═══════════ -->
+<div id="page-reputation" class="page">
+  <div class="dh">
+    <div class="dg">// REPUTATION INTELLIGENCE</div>
+    <div class="dt">Your <span>Rep Score</span></div>
+  </div>
+  <div class="rep-hero">
+    <div class="rep-ring"><div class="rscore" id="r-score">0</div><div class="rlbl">REP</div></div>
+    <div class="rlevel">LEVEL: <span id="r-level">INITIATE</span></div>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:18px">Complete bounties to increase your score</p>
+    <div style="max-width:300px;margin:0 auto">
+      <div class="pb-wrap">
+        <div class="pb-row"><span id="r-cur-level" style="color:var(--cyan)">INITIATE</span><span id="r-progress-lbl">0 / 100 REP</span></div>
+        <div class="pb-track"><div class="pb-fill" id="r-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="rep-grid" id="r-stats"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <div class="panel">
+      <div class="sec-hd"><div class="sec-t"><div class="tbar"></div><div class="stitle">SKILL PROFILE</div></div></div>
+      <div id="r-skills"></div>
+    </div>
+    <div class="panel">
+      <div class="sec-hd"><div class="sec-t"><div class="tbar"></div><div class="stitle">ACHIEVEMENTS</div></div></div>
+      <div id="r-achievements" class="ach-grid" style="grid-template-columns:repeat(3,1fr)"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="sec-hd"><div class="sec-t"><div class="tbar"></div><div class="stitle">ACTIVITY FEED</div></div></div>
+    <div id="r-activity"></div>
+  </div>
+</div>
+
+<!-- ═══════════ PORTFOLIO PAGE ═══════════ -->
+<div id="page-portfolio" class="page">
+  <div class="dh">
+    <div class="dg">// ON-CHAIN CONTRIBUTOR PORTFOLIO</div>
+    <div class="dt">Public <span>Profile</span></div>
+  </div>
+  <div class="panel">
+    <div class="port-hd">
+      <div class="ava" id="pt-ava"></div>
+      <div style="flex:1">
+        <div class="pi-name" id="pt-name"></div>
+        <div class="pi-handle" id="pt-handle"></div>
+        <div class="pi-wallet" id="pt-wallet"></div>
+        <div id="pt-skills" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+      <button class="shr" onclick="shareProfile()">⬆ Share Profile</button>
+    </div>
+    <div id="pt-meta" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+  </div>
+  <div class="panel" id="pt-bounties-panel">
+    <div class="sec-hd"><div class="sec-t"><div class="tbar"></div><div class="stitle">APPLIED OPPORTUNITIES</div></div></div>
+    <div id="pt-bounties"></div>
+  </div>
+  <div class="panel">
+    <div class="sec-hd"><div class="sec-t"><div class="tbar"></div><div class="stitle">ON-CHAIN IDENTITY</div></div></div>
+    <div id="pt-chain"></div>
+  </div>
+</div>
+
+<!-- BOUNTY MODAL -->
+<div id="modal" class="mdrop" style="display:none" onclick="closeModal(event)">
+  <div class="modal" id="modal-inner"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast ts" style="display:none"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+const SKILLS = ['React','Solidity','Clarity','Node.js','Python','Design','Writing','Web3','Community','Security','API','Analytics','Discord','Figma'];
+let state = {
+  user: null,
+  bounties: [],
+  applied: [],
+  statusFilter: 'all',
+  typeFilter: 'all',
+  pendingUser: null // for email verification flow
+};
+
+// ═══════════════════════════════════════════════════
+//  MOCK DATA
+// ═══════════════════════════════════════════════════
+const MOCK = [
+  {id:1,type:'bounty',title:'Build a DAO Voting Dashboard',description:'Create an interactive voting interface for Zero Authority DAO members to propose, vote, and track governance decisions on-chain.',reward:850,currency:'STX',status:'open',tags:['React','Stacks','Web3'],submissions:3,deadline:'2025-06-30',difficulty:'Advanced'},
+  {id:2,type:'gig',title:'Smart Contract Security Audit',description:'Perform a comprehensive security audit on the RepForge staking contracts. Document all vulnerabilities and provide remediation steps.',reward:1200,currency:'STX',status:'open',tags:['Solidity','Security','Clarity'],submissions:1,deadline:'2025-07-15',difficulty:'Expert'},
+  {id:3,type:'quest',title:'Write DAO Onboarding Guide',description:'Create comprehensive documentation for new Zero Authority DAO contributors covering wallet setup, bounty claiming, and reputation building.',reward:300,currency:'STX',status:'open',tags:['Writing','Documentation','DAO'],submissions:7,deadline:'2025-06-20',difficulty:'Beginner'},
+  {id:4,type:'bounty',title:'Design RepForge Mobile UI',description:'Design a full mobile-first UI kit for RepForge. Deliver Figma components covering all dashboard views, auth flows and profile screens.',reward:600,currency:'STX',status:'review',tags:['Figma','UI/UX','Design'],submissions:5,deadline:'2025-06-25',difficulty:'Intermediate'},
+  {id:5,type:'gig',title:'Discord Community Manager',description:'Moderate and grow the Zero Authority DAO Discord. Run weekly AMAs, onboard new members, and report ecosystem metrics monthly.',reward:450,currency:'STX',status:'open',tags:['Community','Discord','DAO'],submissions:2,deadline:'2025-07-01',difficulty:'Beginner'},
+  {id:6,type:'quest',title:'Integrate Stacks Wallet Connect',description:'Integrate the Leather/Hiro wallet into the RepForge frontend. Support wallet auth and on-chain reputation writes via Clarity contracts.',reward:750,currency:'STX',status:'open',tags:['Stacks','JavaScript','Web3'],submissions:0,deadline:'2025-07-10',difficulty:'Advanced'},
+  {id:7,type:'bounty',title:'DAO Analytics API Endpoints',description:'Build REST API endpoints exposing DAO analytics: contributor counts, bounty completion rates, STX volumes, and ecosystem growth metrics.',reward:900,currency:'STX',status:'open',tags:['Node.js','API','Analytics'],submissions:4,deadline:'2025-07-20',difficulty:'Advanced'},
+  {id:8,type:'gig',title:'Translate Docs to Spanish',description:'Translate all Zero Authority DAO public documentation into Spanish. Must be native-level fluency with deep Web3 terminology knowledge.',reward:200,currency:'STX',status:'closed',tags:['Translation','Spanish','Docs'],submissions:9,deadline:'2025-05-31',difficulty:'Beginner'},
+  {id:9,type:'quest',title:'Build Reputation Leaderboard',description:'Build a public leaderboard page ranking top RepForge contributors by REP score. Include filters by skill, time period, and DAO activity.',reward:500,currency:'STX',status:'open',tags:['React','Node.js','Analytics'],submissions:2,deadline:'2025-07-25',difficulty:'Intermediate'},
+  {id:10,type:'bounty',title:'Deploy Clarity Staking Contract',description:'Write and deploy a Clarity smart contract for STX staking on Stacks mainnet. Include slashing logic and configurable reward schedules.',reward:1500,currency:'STX',status:'open',tags:['Clarity','Stacks','Security'],submissions:1,deadline:'2025-08-01',difficulty:'Expert'},
+];
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+window.onload = () => {
+  // Build skill chips
+  const sw = document.getElementById('skills-wrap');
+  SKILLS.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'sk'; b.textContent = s; b.dataset.skill = s;
+    b.onclick = () => { b.classList.toggle('on'); };
+    sw.appendChild(b);
+  });
+  // Restore session
+  const saved = sessionStorage.getItem('rf_session');
+  if (saved) { state.user = JSON.parse(saved); loginSuccess(false); }
+  // Fetch bounties
+  fetchBounties();
+};
+
+// ═══════════════════════════════════════════════════
+//  FETCH BOUNTIES
+// ═══════════════════════════════════════════════════
+async function fetchBounties() {
+  showGrid('<div class="lw"><div class="spin"></div><div class="lt">FETCHING FROM ZERO AUTHORITY DAO API…</div></div>');
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 5000);
+    const r = await fetch('https://zeroauthoritydao.com/api/bounties', { signal: ctrl.signal });
+    const data = await r.json();
+    const items = Array.isArray(data) ? data : (data.bounties || data.data || []);
+    state.bounties = items.length > 0 ? items : MOCK;
+  } catch { state.bounties = MOCK; }
+  updateStats();
+  renderBounties();
+  renderHome();
+}
+
+// ═══════════════════════════════════════════════════
+//  AUTH HELPERS
+// ═══════════════════════════════════════════════════
+function showAuth(mode) {
+  showPage(mode === 'login' ? 'login' : 'signup');
+  updateNav(false);
+}
+
+function navLogo() {
+  if (state.user) showPage('home');
+  else showPage('login');
+}
+
+function getUsers() { return JSON.parse(localStorage.getItem('rf_users') || '[]'); }
+function saveUsers(u) { localStorage.setItem('rf_users', JSON.stringify(u)); }
+function tw(id, s) { const el = document.getElementById(id); if (el) el.innerHTML = s || ''; }
+function setBtn(id, txt, dis) { const b = document.getElementById(id); if(b){b.textContent=txt;b.disabled=dis;} }
+
+// ─── LOGIN ───────────────────────────────────────────
+function doLogin() {
+  const email = document.getElementById('li-email').value.trim();
+  const pass = document.getElementById('li-pass').value;
+  tw('li-err', '');
+  if (!email || !pass) { tw('li-err', '<div class="err">Please fill in all fields.</div>'); return; }
+  setBtn('li-btn', 'AUTHENTICATING…', true);
+  setTimeout(() => {
+    const users = getUsers();
+    const user = users.find(u => u.email === email && u.password === pass);
+    if (!user) { tw('li-err', '<div class="err">Invalid credentials. Try signing up first.</div>'); setBtn('li-btn', 'ACCESS DASHBOARD', false); return; }
+    if (!user.verified) { tw('li-err', '<div class="err">Please verify your email first. Check your inbox.</div>'); setBtn('li-btn', 'ACCESS DASHBOARD', false); return; }
+    state.user = user;
+    sessionStorage.setItem('rf_session', JSON.stringify(user));
+    loginSuccess(true);
+    setBtn('li-btn', 'ACCESS DASHBOARD', false);
+  }, 800);
+}
+
+function walletLogin() {
+  const wallet = 'SP2X9V5K3HJFQ9WK7YDMBE4RZGJZN3V8T4KGBCS7';
+  const users = getUsers();
+  let user = users.find(u => u.wallet === wallet);
+  if (!user) {
+    user = { id: Date.now(), name: 'Wallet User', email: 'wallet@stacks.xyz', password: '', wallet, skills: ['Web3'], repScore: 120, verified: true, joined: new Date().toISOString() };
+    users.push(user); saveUsers(users);
+  }
+  state.user = user;
+  sessionStorage.setItem('rf_session', JSON.stringify(user));
+  loginSuccess(true);
+}
+
+// ─── SIGNUP + EMAIL VERIFICATION ────────────────────
+function doSignup() {
+  const name = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const pass = document.getElementById('su-pass').value;
+  const pass2 = document.getElementById('su-pass2').value;
+  const skills = [...document.querySelectorAll('#skills-wrap .sk.on')].map(b => b.dataset.skill);
+  tw('su-err', '');
+  if (!name || !email || !pass) { tw('su-err', '<div class="err">Please fill in all required fields.</div>'); return; }
+  if (pass !== pass2) { tw('su-err', '<div class="err">Passwords do not match.</div>'); return; }
+  if (pass.length < 6) { tw('su-err', '<div class="err">Password must be at least 6 characters.</div>'); return; }
+  const users = getUsers();
+  if (users.find(u => u.email === email)) { tw('su-err', '<div class="err">Email already registered. Please sign in.</div>'); return; }
+  setBtn('su-btn', 'SENDING VERIFICATION…', true);
+
+  // Build new (unverified) user
+  const newUser = {
+    id: Date.now(), name, email, password: pass, skills,
+    repScore: 0, verified: false,
+    wallet: null, joined: new Date().toISOString()
+  };
+  state.pendingUser = newUser;
+
+  // ── BACKEND CALL ──────────────────────────────────
+  // This calls your Node.js/Express backend which runs Nodemailer.
+  // Endpoint: POST /api/signup
+  // Body: { name, email, password, skills }
+  // Backend sends verification email via Gmail App Password.
+  // On success → show verify page.
+  // ─────────────────────────────────────────────────
+  fetch('/api/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password: pass, skills })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) {
+      tw('su-err', `<div class="err">${data.error}</div>`);
+      setBtn('su-btn', 'JOIN REPFORGE', false);
+    } else {
+      // Save pending (unverified) user locally too
+      users.push(newUser); saveUsers(users);
+      showVerifyPage(email, name);
+      setBtn('su-btn', 'JOIN REPFORGE', false);
+    }
+  })
+  .catch(() => {
+    // ── DEMO MODE (no backend running) ──────────────
+    // When the backend isn't available (e.g. local preview),
+    // we simulate the email verification flow so you can see it.
+    // Remove this catch block once your backend is deployed on Render.
+    // ─────────────────────────────────────────────────
+    users.push(newUser); saveUsers(users);
+    showVerifyPage(email, name, true);
+    setBtn('su-btn', 'JOIN REPFORGE', false);
+  });
+}
+
+function showVerifyPage(email, name, demo = false) {
+  showPage('verify');
+  document.getElementById('vfy-email').textContent = email;
+
+  const verifyLink = `https://repforgedao.onrender.com/verify-email?token=DEMO_TOKEN_123`;
+
+  document.getElementById('email-preview').innerHTML = `
+    <div style="border-left:2px solid var(--cyan);padding-left:12px">
+      <div style="color:var(--text-dim);font-size:11px;margin-bottom:6px">FROM: RepForge DAO &lt;noreply@repforgedao.io&gt;</div>
+      <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px">TO: ${email}</div>
+      <div style="color:var(--text-bright);margin-bottom:8px">Hey <strong style="color:var(--cyan)">${name}</strong>,</div>
+      <div style="color:var(--text);margin-bottom:10px">Welcome to Zero Authority DAO. Click below to activate your account.</div>
+      <a href="#" onclick="simulateVerify();return false" style="display:inline-block;padding:8px 20px;background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff;text-decoration:none;border-radius:4px;font-size:12px;font-weight:700;letter-spacing:1.5px">VERIFY MY ACCOUNT</a>
+      ${demo ? '<div style="margin-top:10px;font-size:11px;color:var(--orange)">⚠ Demo mode — backend not reached. Click above to simulate verification.</div>' : ''}
+    </div>`;
+  updateNav(false);
+}
+
+function simulateVerify() {
+  // This simulates clicking the /verify-email?token=xxx link.
+  // In production, this is handled by your Express route: GET /verify-email
+  // which sets user.verified = true in your DB, then redirects.
+  if (!state.pendingUser) { showToast('No pending account found.', 'e'); return; }
+  const users = getUsers();
+  const idx = users.findIndex(u => u.email === state.pendingUser.email);
+  if (idx !== -1) {
+    users[idx].verified = true;
+    saveUsers(users);
+    state.user = users[idx];
+    sessionStorage.setItem('rf_session', JSON.stringify(state.user));
+    state.pendingUser = null;
+    loginSuccess(true);
+    showToast('Email verified! Welcome to RepForge.', 's');
+  }
+}
+
+function resendVerification() {
+  if (!state.pendingUser) return;
+  setBtn('resend-btn', 'SENDING…', true);
+  fetch('/api/resend-verification', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: state.pendingUser.email })
+  })
+  .then(() => { showToast('Verification email resent!', 's'); })
+  .catch(() => { showToast('Resend failed — check backend connection.', 'e'); })
+  .finally(() => { setBtn('resend-btn', 'RESEND EMAIL', false); });
+}
+
+// ─── SESSION ────────────────────────────────────────
+function loginSuccess(notify) {
+  state.applied = JSON.parse(localStorage.getItem('rf_applied_' + state.user.id) || '[]');
+  updateNav(true);
+  showPage('home');
+  renderAll();
+  if (notify) showToast('Welcome back, ' + state.user.name + '!', 's');
+}
+
+function doLogout() {
+  state.user = null;
+  sessionStorage.removeItem('rf_session');
+  updateNav(false);
+  showPage('login');
+  document.getElementById('li-email').value = '';
+  document.getElementById('li-pass').value = '';
+  tw('li-err', '');
+}
+
+// ═══════════════════════════════════════════════════
+//  NAV / PAGE
+// ═══════════════════════════════════════════════════
+function updateNav(loggedIn) {
+  const nr = document.getElementById('nav-r');
+  if (loggedIn && state.user) {
+    const w = state.user.wallet ? state.user.wallet.slice(0,6)+'…'+state.user.wallet.slice(-4) : state.user.name.split(' ')[0];
+    nr.innerHTML = `
+      <button class="nbtn" id="nb-home" onclick="goPage('home')">Dashboard</button>
+      <button class="nbtn" id="nb-bounties" onclick="goPage('bounties')">Bounties</button>
+      <button class="nbtn" id="nb-reputation" onclick="goPage('reputation')">Reputation</button>
+      <button class="nbtn" id="nb-portfolio" onclick="goPage('portfolio')">Portfolio</button>
+      <div class="wbadge"><div class="wdot"></div>${w}</div>
+      <button class="nbtn" onclick="doLogout()" style="color:var(--text-dim)">Sign Out</button>`;
+    setActiveNav('home');
+  } else {
+    nr.innerHTML = `
+      <span style="font-family:var(--fm);font-size:11px;color:var(--text-dim);padding:5px 10px;border:1px solid var(--border);border-radius:3px;letter-spacing:1px">ZERO AUTHORITY DAO</span>
+      <button class="nbtn" onclick="showAuth('login')">Sign In</button>
+      <button class="nbtn pri" onclick="showAuth('signup')">Join Now</button>`;
+  }
+}
+
+function setActiveNav(pg) {
+  ['home','bounties','reputation','portfolio'].forEach(p => {
+    const b = document.getElementById('nb-'+p);
+    if (b) b.className = 'nbtn' + (p === pg ? ' on' : '');
+  });
+}
+
+function goPage(pg) {
+  setActiveNav(pg);
+  showPage(pg);
+  if (pg === 'reputation') renderRep();
+  if (pg === 'portfolio') renderPortfolio();
+  if (pg === 'bounties') { renderBounties(); updateBountyStats(); }
+}
+
+function showPage(pg) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + pg);
+  if (el) el.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER ALL
+// ═══════════════════════════════════════════════════
+function renderAll() {
+  renderHome();
+  updateBountyStats();
+}
+
+// ═══════════════════════════════════════════════════
+//  HOME
+// ═══════════════════════════════════════════════════
+function renderHome() {
+  if (!state.user) return;
+  const u = getUsers().find(x => x.id === state.user.id) || state.user;
+  tw('hm-user', (u.name || 'CONTRIBUTOR').toUpperCase());
+  tw('hm-rep', u.repScore || 0);
+  const open = state.bounties.filter(b => b.status === 'open');
+  tw('hm-open', open.length || MOCK.filter(b=>b.status==='open').length);
+  tw('hm-applied', state.applied.length);
+  const pool = state.bounties.reduce((a,b)=>a+b.reward,0) || MOCK.reduce((a,b)=>a+b.reward,0);
+  tw('hm-pool', pool.toLocaleString());
+
+  // verify banner
+  if (!u.verified) {
+    tw('hm-verify-banner', `<div class="verify-banner">⚠ Your email is not verified. Some features may be limited.<button onclick="showPage('verify')">Verify Now →</button></div>`);
+  } else tw('hm-verify-banner', '');
+
+  // skill matched
+  const skills = u.skills || [];
+  const src = state.bounties.length ? state.bounties : MOCK;
+  const matched = src.filter(b => b.status === 'open' && skills.some(s => b.tags?.includes(s))).slice(0,3);
+  tw('hm-skills-lbl', skills.length ? 'Based on: ' + skills.join(', ') : 'No skills selected');
+  if (matched.length) {
+    tw('hm-matched', `<div class="bgrid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">${matched.map(b=>smallCard(b)).join('')}</div>`);
+  } else {
+    tw('hm-matched', `<div class="empty"><div class="ei">🎯</div><div class="et">NO MATCHES YET</div><div class="es">Update your skill profile to get matched opportunities.</div></div>`);
+  }
+
+  // latest
+  const latest = src.filter(b=>b.status==='open').slice(0,4);
+  tw('hm-latest', latest.map(b=>`
+    <div style="display:flex;align-items:center;gap:14px;padding:13px 14px;background:rgba(255,255,255,0.02);border-radius:7px;border:1px solid var(--border);margin-bottom:9px">
+      <span class="badge ${b.type==='bounty'?'bb':b.type==='gig'?'bg2':'bq'}">${b.type}</span>
+      <div style="flex:1;font-size:14px;color:var(--text-bright);font-weight:600">${b.title}</div>
+      <div style="font-family:var(--fd);font-size:15px;color:var(--orange);font-weight:700;flex-shrink:0">${b.reward} STX</div>
+    </div>`).join(''));
+}
+
+function smallCard(b) {
+  return `<div class="bc" onclick="openModal(${b.id})">
+    <div class="bch"><span class="badge ${b.type==='bounty'?'bb':b.type==='gig'?'bg2':'bq'}">${b.type}</span><span class="bst so">open</span></div>
+    <div class="btitle">${b.title}</div>
+    <div class="bfoot"><div class="brw">${b.reward} <span>STX</span></div><div class="btags">${(b.tags||[]).slice(0,2).map(t=>`<span class="btag">${t}</span>`).join('')}</div></div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+//  BOUNTIES
+// ═══════════════════════════════════════════════════
+function updateStats() {
+  const src = state.bounties.length ? state.bounties : MOCK;
+  const open = src.filter(b=>b.status==='open').length;
+  const pool = src.reduce((a,b)=>a+(b.reward||0),0);
+  tw('b-total', src.length);
+  tw('b-open-sub', open+' currently open');
+  tw('b-pool', pool.toLocaleString()+' STX');
+}
+
+function updateBountyStats() {
+  updateStats();
+  tw('b-mine', state.applied.length);
+  const u = state.user ? (getUsers().find(x=>x.id===state.user.id)||state.user) : null;
+  const skills = u?.skills || [];
+  const src = state.bounties.length ? state.bounties : MOCK;
+  const m = src.filter(b=>skills.some(s=>b.tags?.includes(s))).length;
+  tw('b-matched', m || src.length);
+}
+
+function setFilter(type, val, btn) {
+  if (type==='status') {
+    state.statusFilter = val;
+    document.querySelectorAll('[data-sf]').forEach(b=>b.classList.toggle('on',b.dataset.sf===val));
+  } else {
+    state.typeFilter = val;
+    document.querySelectorAll('[data-tf]').forEach(b=>b.classList.toggle('on',b.dataset.tf===val));
+  }
+  renderBounties();
+}
+
+function renderBounties() {
+  const q = (document.getElementById('b-search')?.value||'').toLowerCase();
+  const src = state.bounties.length ? state.bounties : MOCK;
+  const list = src.filter(b=>{
+    if (state.statusFilter!=='all' && b.status!==state.statusFilter) return false;
+    if (state.typeFilter!=='all' && b.type!==state.typeFilter) return false;
+    if (q && !b.title.toLowerCase().includes(q) && !(b.tags||[]).some(t=>t.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  if (!list.length) {
+    showGrid('<div class="empty"><div class="ei">🔍</div><div class="et">NO RESULTS FOUND</div><div class="es">Try adjusting your filters or search query.</div></div>');
+    return;
+  }
+  showGrid(`<div class="bgrid">${list.map(b=>bountyCard(b)).join('')}</div>`);
+}
+
+function showGrid(html) { tw('b-grid', html); }
+
+function bountyCard(b) {
+  const cls = b.type==='bounty'?'bb':b.type==='gig'?'bg2':'bq';
+  const stCls = b.status==='open'?'so':b.status==='review'?'sr':'sc2';
+  const isApplied = state.applied.includes(b.id);
+  const apBtn = isApplied
+    ? `<div class="applied-lbl">✓ APPLIED</div>`
+    : b.status==='open' ? `<button class="apbtn" onclick="applyBounty(event,${b.id})">APPLY</button>` : '';
+  return `<div class="bc" onclick="openModal(${b.id})">
+    <div class="bch"><span class="badge ${cls}">${b.type}</span><span class="bst ${stCls}">${b.status}</span></div>
+    <div class="btitle">${b.title}</div>
+    <div class="bdesc">${b.description}</div>
+    <div class="btags">${(b.tags||[]).slice(0,4).map(t=>`<span class="btag">${t}</span>`).join('')}</div>
+    <div class="bfoot">
+      <div><div class="brw">${b.reward} <span>${b.currency||'STX'}</span></div><div style="font-size:11px;color:var(--text-dim);margin-top:2px">${b.submissions} submissions</div></div>
+      ${apBtn}
+    </div>
+  </div>`;
+}
+
+function applyBounty(e, id) {
+  e.stopPropagation();
+  if (state.applied.includes(id)) return;
+  state.applied.push(id);
+  localStorage.setItem('rf_applied_'+state.user.id, JSON.stringify(state.applied));
+  // Boost rep
+  const users = getUsers();
+  const i = users.findIndex(u=>u.id===state.user.id);
+  if (i!==-1) { users[i].repScore=(users[i].repScore||0)+25; saveUsers(users); state.user=users[i]; sessionStorage.setItem('rf_session',JSON.stringify(state.user)); }
+  const b = (state.bounties.length?state.bounties:MOCK).find(x=>x.id===id);
+  showToast(`Applied to "${b?.title||'bounty'}"! +25 REP`, 's');
+  renderBounties(); updateBountyStats(); renderHome();
+}
+
+// ═══════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════
+function openModal(id) {
+  const b = (state.bounties.length?state.bounties:MOCK).find(x=>x.id===id);
+  if (!b) return;
+  const cls=b.type==='bounty'?'bb':b.type==='gig'?'bg2':'bq';
+  const stCls=b.status==='open'?'so':b.status==='review'?'sr':'sc2';
+  const isApplied=state.applied.includes(b.id);
+  document.getElementById('modal-inner').innerHTML=`
+    <button class="mc" onclick="closeModal()">✕</button>
+    <div style="margin-bottom:16px"><span class="badge ${cls}">${b.type}</span> <span class="bst ${stCls}" style="margin-left:6px">${b.status}</span></div>
+    <div class="mt">${b.title}</div>
+    <p style="font-size:14px;color:var(--text);line-height:1.75;margin-bottom:20px">${b.description}</p>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px">
+      ${[['REWARD',`<span style="font-family:var(--fd);font-size:22px;color:var(--orange)">${b.reward}</span> <span style="color:var(--text-dim)">${b.currency||'STX'}</span>`],['DIFFICULTY',`<span style="font-size:15px;color:var(--text-bright);font-weight:600">${b.difficulty}</span>`],['DEADLINE',`<span style="font-family:var(--fm);font-size:13px">${b.deadline}</span>`],['SUBMISSIONS',`<span style="font-size:15px;color:var(--text-bright);font-weight:600">${b.submissions}</span>`]].map(([l,v])=>`<div><div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;margin-bottom:5px">${l}</div>${v}</div>`).join('')}
+    </div>
+    <div class="btags" style="margin-bottom:22px">${(b.tags||[]).map(t=>`<span class="btag">${t}</span>`).join('')}</div>
+    ${isApplied
+      ? `<div style="text-align:center;padding:14px;background:rgba(0,255,157,0.07);border:1px solid rgba(0,255,157,0.2);border-radius:6px;color:var(--green);font-weight:700">✓ You have already applied for this ${b.type}</div>`
+      : b.status==='open'
+        ? `<button class="sbtn" onclick="applyBounty(event,${b.id});closeModal()">APPLY FOR THIS ${b.type.toUpperCase()}</button>`
+        : `<div style="text-align:center;font-size:13px;color:var(--text-dim);padding:12px 0">This opportunity is no longer accepting applications.</div>`
+    }`;
+  document.getElementById('modal').style.display='flex';
+}
+
+function closeModal(e) {
+  if (!e || e.target===document.getElementById('modal')) {
+    document.getElementById('modal').style.display='none';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  REPUTATION
+// ═══════════════════════════════════════════════════
+function renderRep() {
+  if (!state.user) return;
+  const u = getUsers().find(x=>x.id===state.user.id)||state.user;
+  const score = u.repScore||0;
+  const {level,levelColor,nextLevel,prevLevel} = getLevel(score);
+  const pct = Math.round(((score-prevLevel)/(nextLevel-prevLevel))*100);
+
+  tw('r-score',score); tw('r-level',`<span style="color:${levelColor}">${level}</span>`);
+  tw('r-cur-level',`<span style="color:${levelColor}">${level}</span>`);
+  tw('r-progress-lbl',`${score} / ${nextLevel} REP`);
+  setTimeout(()=>{ const b=document.getElementById('r-bar'); if(b) b.style.width=pct+'%'; },100);
+
+  const skills=u.skills||[];
+  const appliedCount=state.applied.length;
+  const achievs=getAchievements(score,appliedCount);
+
+  tw('r-stats',`
+    ${[['REP SCORE',score,'var(--cyan)'],['APPLICATIONS',appliedCount,'var(--orange)'],['SKILLS',skills.length,'var(--purple)'],['ACHIEVEMENTS',achievs.filter(a=>a.u).length,'var(--green)']].map(([n,v,c])=>`
+    <div class="rsc"><div class="rsv" style="color:${c}">${v}</div><div class="rsn">${n}</div></div>`).join('')}`);
+
+  tw('r-skills', skills.length
+    ? skills.map(s=>{const p=Math.floor(Math.random()*35+60);return`<div class="pb-wrap"><div class="pb-row"><span>${s}</span><span>${p}%</span></div><div class="pb-track"><div class="pb-fill" style="width:${p}%"></div></div></div>`;}).join('')
+    : '<div style="color:var(--text-dim);font-size:13px">No skills yet. Update your profile on signup.</div>');
+
+  tw('r-achievements', achievs.map(a=>`
+    <div class="ach" style="opacity:${a.u?1:.3}">
+      <div class="ach-i">${a.icon}</div>
+      <div class="ach-n">${a.name}</div>
+      <div class="ach-d">${a.desc}</div>
+    </div>`).join(''));
+
+  const acts=[
+    {text:`<strong>Account created</strong> — Welcome to RepForge!`,time:u.joined,dot:'dc'},
+    ...state.applied.map((id,i)=>({text:`<strong>Applied to bounty</strong> — opportunity #${id}`,time:new Date(Date.now()-i*18000000).toISOString(),dot:'do'}))
+  ].sort((a,b)=>new Date(b.time)-new Date(a.time));
+
+  tw('r-activity', acts.length
+    ? acts.slice(0,8).map(a=>`<div class="act-item"><div class="adot ${a.dot}"></div><div><div class="at">${a.text}</div><div class="atm">${timeAgo(a.time)}</div></div></div>`).join('')
+    : '<div class="empty" style="padding:32px"><div class="et">NO ACTIVITY YET</div><div class="es">Start applying to bounties to build your history.</div></div>');
+}
+
+function getLevel(score) {
+  if (score<100) return {level:'INITIATE',levelColor:'var(--text-dim)',nextLevel:100,prevLevel:0};
+  if (score<300) return {level:'CONTRIBUTOR',levelColor:'var(--cyan)',nextLevel:300,prevLevel:100};
+  if (score<600) return {level:'BUILDER',levelColor:'var(--orange)',nextLevel:600,prevLevel:300};
+  if (score<1000) return {level:'VETERAN',levelColor:'var(--purple)',nextLevel:1000,prevLevel:600};
+  return {level:'LEGEND',levelColor:'var(--gold)',nextLevel:2000,prevLevel:1000};
+}
+
+function getAchievements(score,applied) {
+  return [
+    {icon:'🚀',name:'First Launch',desc:'Joined RepForge',u:true},
+    {icon:'📋',name:'Applicant',desc:'Applied to 1 bounty',u:applied>=1},
+    {icon:'🏹',name:'Hunter',desc:'Applied to 5 bounties',u:applied>=5},
+    {icon:'⚡',name:'Active',desc:'100+ REP score',u:score>=100},
+    {icon:'🔥',name:'Builder',desc:'300+ REP score',u:score>=300},
+    {icon:'👑',name:'Legend',desc:'1000+ REP score',u:score>=1000},
+  ];
+}
+
+// ═══════════════════════════════════════════════════
+//  PORTFOLIO
+// ═══════════════════════════════════════════════════
+function renderPortfolio() {
+  if (!state.user) return;
+  const u = getUsers().find(x=>x.id===state.user.id)||state.user;
+  const score=u.repScore||0;
+  const skills=u.skills||[];
+  const initials=(u.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const wallet=u.wallet||'SP'+Math.random().toString(36).slice(2,12).toUpperCase();
+  const handle='@'+(u.name||'contributor').toLowerCase().replace(/\s+/g,'_');
+  const {level}=getLevel(score);
+
+  tw('pt-ava',initials);
+  tw('pt-name',u.name);
+  tw('pt-handle',handle);
+  tw('pt-wallet','🔗 '+wallet.slice(0,8)+'…'+wallet.slice(-4));
+  tw('pt-skills',skills.map(s=>`<span class="btag" style="color:var(--cyan);border-color:rgba(0,200,255,0.3)">${s}</span>`).join(''));
+
+  tw('pt-meta',[
+    ['REP Score',score,'var(--cyan)'],['Level',level,'var(--orange)'],
+    ['Applied',state.applied.length,'var(--green)'],['Skills',skills.length,'var(--purple)']
+  ].map(([l,v,c])=>`
+    <div style="text-align:center;padding:15px;background:rgba(255,255,255,0.02);border-radius:7px;border:1px solid var(--border)">
+      <div style="font-family:var(--fd);font-size:21px;font-weight:900;color:${c};margin-bottom:4px">${v}</div>
+      <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px">${l.toUpperCase()}</div>
+    </div>`).join(''));
+
+  const applied_b=(state.bounties.length?state.bounties:MOCK).filter(b=>state.applied.includes(b.id)).slice(0,4);
+  if (applied_b.length) {
+    tw('pt-bounties',applied_b.map(b=>`
+      <div style="display:flex;align-items:center;gap:14px;padding:12px 15px;background:rgba(0,200,255,0.04);border-radius:7px;border:1px solid var(--border);margin-bottom:9px">
+        <span class="badge ${b.type==='bounty'?'bb':b.type==='gig'?'bg2':'bq'}">${b.type}</span>
+        <div style="flex:1;font-size:14px;color:var(--text-bright);font-weight:600">${b.title}</div>
+        <div style="font-family:var(--fd);font-size:15px;color:var(--orange);font-weight:700">${b.reward} STX</div>
+        <div style="font-size:12px;color:var(--green);font-weight:700">✓ APPLIED</div>
+      </div>`).join(''));
+    document.getElementById('pt-bounties-panel').style.display='block';
+  } else {
+    document.getElementById('pt-bounties-panel').style.display='none';
+  }
+
+  const joined=new Date(u.joined||Date.now()).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  tw('pt-chain',[
+    ['Wallet Address',wallet,true],
+    ['Network','Stacks Blockchain',false],
+    ['DAO','Zero Authority DAO',false],
+    ['Verification',u.verified?'✅ Verified':'⚠ Pending',false],
+    ['Member Since',joined,false]
+  ].map(([l,v,m])=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${l.toUpperCase()}</span>
+      <span style="font-family:${m?'var(--fm)':'var(--fb)'};font-size:13px;color:var(--text-bright)">${v}</span>
+    </div>`).join(''));
+}
+
+function shareProfile() {
+  if (!state.user) return;
+  const u=getUsers().find(x=>x.id===state.user.id)||state.user;
+  const score=u.repScore||0;
+  const {level}=getLevel(score);
+  const text=`🔥 Check out my @RepForge_DAO contributor profile!\n\n📊 REP Score: ${score} (${level})\n⚡ Skills: ${(u.skills||[]).join(', ')||'N/A'}\n🎯 Applications: ${state.applied.length}\n\n#ZeroAuthorityDAO #RepForge #Web3 #Stacks`;
+  if (navigator.share) { navigator.share({title:'RepForge Profile',text}); }
+  else { navigator.clipboard.writeText(text).then(()=>showToast('Profile copied to clipboard!','s')); }
+}
+
+// ═══════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════
+function timeAgo(d) {
+  const h=Math.floor((Date.now()-new Date(d).getTime())/3600000);
+  if(h<1)return'just now';if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';
+}
+
+let toastTimer;
+function showToast(msg, type) {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast '+(type==='s'?'ts':type==='e'?'te':'ti');
+  t.style.display='block';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{t.style.display='none';},3200);
+}
+</script>
+</body>
+</html>
